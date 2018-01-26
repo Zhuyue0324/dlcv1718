@@ -26,8 +26,8 @@ class MyNet(nn.Module):
     super().__init__()
     self.pretrained_net = pretrained_net
 
-    score_5 = nn.Conv2d(1024, num_classes , kernel_size=1)
-    score_4 = nn.Conv2d(512, num_classes , kernel_size=1)
+    score_5 = nn.Conv2d(2048, num_classes , kernel_size=1)
+    score_4 = nn.Conv2d(1024, num_classes , kernel_size=1)
     score_3 = nn.Conv2d(512, num_classes , kernel_size=1)
     score_2 = nn.Conv2d(256, num_classes , kernel_size=1)
     score_1 = nn.Conv2d(64, num_classes , kernel_size=1)
