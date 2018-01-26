@@ -1,5 +1,6 @@
 
 import torch.utils.data as data
+import torchvision
 
 from PIL import Image
 import os
@@ -106,7 +107,7 @@ class MyImageFolder(data.Dataset):
         if self.target_transform is not None:
             img2 = self.target_transform(img2)
 
-        return img1, img2
+        return img1, img2[0].add(0.5).int().float()
 
     def __len__(self):
         return len(self.imgs1)
