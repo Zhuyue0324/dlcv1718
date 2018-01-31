@@ -72,7 +72,7 @@ def lowest_non_road(label_img):
 
 def lowest_non_road_color(color_img, label_img):
     label_img = np.squeeze(label_img)
-    color_img_rgb = color_img.transpose(1,2,0)
+    color_img_rgb = color_img.transpose(1,2,0) // 2
     mask = np.where(label_img > 10, 1, 0)
     mask = np.diag(range(1024)).dot(mask)
     am = np.argmax(mask,0)
