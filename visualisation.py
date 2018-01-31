@@ -72,10 +72,19 @@ def lowest_non_road(label_img):
 
 def lowest_non_road_color(color_img, label_img):
     label_img = np.squeeze(label_img)
-    color_img_rgb = color_img.transpose(1,2,0) // 2
+    color_img_rgb = color_img.transpose(1,2,0)
     mask = np.where(label_img > 10, 1, 0)
+    print(np.sum(mask))
     mask = np.diag(range(1024)).dot(mask)
     am = np.argmax(mask,0)
     for i in range(9):
         color_img_rgb[am+i-4,range(2048),:] = [127,0,0]
     return color_img_rgb
+
+def reduce(label_img, road_labels):
+    # reduces an image to just two classes, one of them given as input
+    mask = np.where(label_img == 0, 1, 0)
+    for l in road_labels:
+        mask += np.where(label_img == l, 1, 0)
+    return mask # is already of shape (1024,2048)
+
