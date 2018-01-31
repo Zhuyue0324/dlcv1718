@@ -2,11 +2,11 @@ import torch
 from torch import nn
 from torch.nn import init
 import torch.nn.functional as F
-from torchvision.models.resnet import Bottleneck, ResNet
+from torchvision.models.resnet import BasicBlock, ResNet
 
-class PretrainedResNet50(ResNet):
+class PretrainedResNet34(ResNet):
   def __init__(self):
-    super().__init__(Bottleneck, [3, 4, 6, 3], 1000)
+    super().__init__(BasicBlock, [3, 4, 6, 3], 1000)
 
   def forward(self, x):
     input_dim = x.size()[2:]
@@ -26,10 +26,10 @@ class MyNet(nn.Module):
     super().__init__()
     self.pretrained_net = pretrained_net
 
-    score_5 = nn.Conv2d(1024, num_classes , kernel_size=1)
-    score_4 = nn.Conv2d(512, num_classes , kernel_size=1)
-    score_3 = nn.Conv2d(512, num_classes , kernel_size=1)
-    score_2 = nn.Conv2d(256, num_classes , kernel_size=1)
+    score_5 = nn.Conv2d(512, num_classes , kernel_size=1)
+    score_4 = nn.Conv2d(256, num_classes , kernel_size=1)
+    score_3 = nn.Conv2d(128, num_classes , kernel_size=1)
+    score_2 = nn.Conv2d(64, num_classes , kernel_size=1)
     score_1 = nn.Conv2d(64, num_classes , kernel_size=1)
     self._normal_initialization(score_1)
     self._normal_initialization(score_2)

@@ -107,7 +107,7 @@ class MyImageFolder(data.Dataset):
         if self.target_transform is not None:
             img2 = self.target_transform(img2)
 
-        return img1, img2[0].add(0.5).int().float()
+        return img1, img2[0].add(0.5).int().long()
 
     def __len__(self):
         return len(self.imgs1)
