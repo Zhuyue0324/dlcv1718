@@ -22,24 +22,26 @@ import matplotlib.pyplot as plt
 
 # Parsing command-line
 
-if len(sys.argv) == 5:
+if len(sys.argv) == 6:
     WEIGHTS_PATH = sys.argv[1]
     IS_34 = '34' in WEIGHTS_PATH
     SLICE_WIDTH = int(sys.argv[2])
-    PRINT_FREQUENCY = int(sys.argv[3])
-    NB_EPOCHS = int(sys.argv[4])
+    STRIDE = int(sys.argv[3])
+    PRINT_FREQUENCY = int(sys.argv[4])
+    NB_EPOCHS = int(sys.argv[5])
     if IS_34:
         print("Will use ResNet34")
     else:
         print("Will use ResNet50")
 else:
     print("Command should have been like:")
-    print("\tpython3 run.py WEIGHTS_PATH SLICE_WIDTH PRINT_FREQUENCY NB_EPOCHS")
+    print("\tpython3 run.py WEIGHTS_PATH SLICE_WIDTH STRIDE PRINT_FREQUENCY NB_EPOCHS")
     print("but was: python3 "+str(sys.argv))
     print("will use default values instead.")
     WEIGHTS_PATH = "dlcv_weight34.pth"  # where the weights are saved in the end, for further reuse
     IS_34 = True
-    SLICE_WIDTH = 32
+    SLICE_WIDTH = 128
+    STRIDE = 32
     PRINT_FREQUENCY = 1024
     NB_EPOCHS = 1
 # Data loading and pre-processing
@@ -113,7 +115,7 @@ LAST_TRAIN_LOSS = 10
 LAST_VAL_LOSS = 10
 # EPOCH=0
 WIDTH = 2048
-NUM_SLICES = WIDTH // SLICE_WIDTH  
+NUM_SLICES = (WIDTH - SLICE_WIDTH)//STRIDE +1  
 
 for epoch in range(NB_EPOCHS):
     
@@ -124,17 +126,17 @@ for epoch in range(NB_EPOCHS):
 
     NET.train()
 
-    print("Slice width:  %.5d Number of Slices:  %.5d" % (SLICE_WIDTH, NUM_SLICES))  
-
+    print ("Slice width: %5d\tStride: %5d \tNumber of Slices: %5d" %(WIDTH, STRIDE, NUM_SLICES))
+    
     for inputs, labels in TRAIN_LOADER:
         labels_masked = reduce(labels.numpy(), ROAD_LABELS) 
         labels = torch.from_numpy(labels_masked)    
 
         for i in range(NUM_SLICES):  
 
-            inputs_temp = inputs[:, :, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  
-            labels_temp = labels[:, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  
-
+            inputs_temp = inputs[:, :, :, i*STRIDE : i*STRIDE + SLICE_WIDTH]
+            labels_temp = labels[:, :, i*STRIDE : i*STRIDE + SLICE_WIDTH]     
+            
             if USE_GPU:
                 inputs_temp = inputs_temp.cuda()  
                 labels_temp = labels_temp.cuda() 
@@ -150,11 +152,13 @@ for epoch in range(NB_EPOCHS):
             running_loss += loss.data[0]
             epochloss += loss.data[0]
             numsample += BATCH_SIZE
+            # print statistics and save weights
             if numsample % PRINT_FREQUENCY == 0:  
                 print('[%d, %5d] loss: %.5f' %
                       (epoch + 1, numsample, running_loss / PRINT_FREQUENCY),
                       end='\r', flush=True)
                 running_loss = 0.0
+                torch.save(NET.state_dict(),WEIGHTS_PATH[:-4]+"_temp.pth")
 
     newTrainLoss = epochloss / (NB_TRAIN * NUM_SLICES)  
     print('The average loss of epoch ', epoch + 1, ' is ', newTrainLoss)
@@ -164,17 +168,16 @@ for epoch in range(NB_EPOCHS):
     epochloss = 0.0
     numsample = 0
     NET.eval()
-    print("Slice width:  %.5d Number of Slices:  %.5d" % (SLICE_WIDTH, NUM_SLICES))  
-
+    print ("Slice width: %5d\tStride: %5d \tNumber of Slices: %5d" %(WIDTH, STRIDE, NUM_SLICES))
     for inputs, labels in VAL_LOADER:
         labels_masked = reduce(labels.numpy(), ROAD_LABELS)
         labels = torch.from_numpy(labels_masked)
 
-        for i in range(NUM_SLICES):  
+        for i in range (NUM_SLICES):
 
-            inputs_temp = inputs[:, :, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  
-            labels_temp = labels[:, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  
-
+            inputs_temp = inputs[:, :, :, i*STRIDE : i*STRIDE + SLICE_WIDTH]
+            labels_temp = labels[:, :, i*STRIDE : i*STRIDE + SLICE_WIDTH]      
+            
             if USE_GPU:
                 inputs_temp = inputs_temp.cuda()  
                 labels_temp = labels_temp.cuda()  
@@ -186,7 +189,11 @@ for epoch in range(NB_EPOCHS):
             epochloss += loss.data[0]
             meanCorrectProba += meanProbability
             numsample += BATCH_SIZE
-
+            # print statistics
+            if numsample % PRINT_FREQUENCY == 0:  
+                print('[%d, %5d] loss: %.5f' %
+                      (epoch + 1, numsample, loss),
+                      end='\r', flush=True)
     newValLoss = epochloss / (NB_VAL * NUM_SLICES)
     print('The average validation loss is ', newValLoss)
     print('The average correctness of the validation data is ', meanCorrectProba / (NB_VAL * NUM_SLICES) * 100,
