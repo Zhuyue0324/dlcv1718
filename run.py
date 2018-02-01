@@ -1,4 +1,4 @@
-%matplotlib inline
+
 
 import sys
 sys.version
