@@ -22,12 +22,16 @@ import matplotlib.pyplot as plt
 
 # Parsing command-line
 
-if len(sys.argv) == 6:
+if len(sys.argv) == 5:
     WEIGHTS_PATH = sys.argv[1]
-    IN_34 = '34' in WEIGHTS_PATH
+    IS_34 = '34' in WEIGHTS_PATH
     SLICE_WIDTH = int(sys.argv[2])
     PRINT_FREQUENCY = int(sys.argv[3])
     NB_EPOCHS = int(sys.argv[4])
+    if IS_34:
+        print("Will use ResNet34")
+    else:
+        print("Will use ResNet50")
 else:
     print("Command should have been like:")
     print("\tpython3 run.py WEIGHTS_PATH SLICE_WIDTH PRINT_FREQUENCY NB_EPOCHS")
