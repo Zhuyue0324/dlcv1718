@@ -1,5 +1,3 @@
-
-
 import sys
 sys.version
 
@@ -22,6 +20,24 @@ from MyFolder import MyImageFolder
 from visualisation import *
 import matplotlib.pyplot as plt
 
+# Parsing command-line
+
+if len(sys.argv) == 6:
+    WEIGHTS_PATH = sys.argv[1]
+    IN_34 = '34' in WEIGHTS_PATH
+    SLICE_WIDTH = int(sys.argv[2])
+    PRINT_FREQUENCY = int(sys.argv[3])
+    NB_EPOCHS = int(sys.argv[4])
+else:
+    print("Command should have been like:")
+    print("\tpython3 run.py WEIGHTS_PATH SLICE_WIDTH PRINT_FREQUENCY NB_EPOCHS")
+    print("but was: python3 "+str(sys.argv))
+    print("will use default values instead.")
+    WEIGHTS_PATH = "dlcv_weight34.pth"  # where the weights are saved in the end, for further reuse
+    IS_34 = True
+    SLICE_WIDTH = 32
+    PRINT_FREQUENCY = 1024
+    NB_EPOCHS = 1
 # Data loading and pre-processing
 
 LABELSCSV = pd.read_csv("labels.csv")
@@ -40,7 +56,10 @@ DATA_TEST = MyImageFolder(root1=ROOT+LI8B+'test', root2=ROOT+GT+'test_lido' , tr
 
 # setting up the StixelNet
 
-from Mynet34 import PretrainedResNet34, MyNet
+if IS_34:
+    from Mynet34 import PretrainedResNet34, MyNet
+else:
+    from Mynet50 import PretrainedResNet50, MyNet
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torch.optim as optim
@@ -52,12 +71,16 @@ NUM_CLASSES = 2
 NB_TRAIN=len(DATA_TRAIN)
 NB_VAL=len(DATA_VAL)
 NB_TEST=len(DATA_TEST)
-WEIGHTS_PATH = "dlcv_weight34.pth" # where the weights are saved in the end, for further reuse
 BATCH_SIZE = 1
 USE_GPU = torch.cuda.is_available()
 
-PRETRAINED_NET = PretrainedResNet34()
-PRETRAINED_NET.load_state_dict(models.resnet34(pretrained=True).state_dict())
+if IS_34:
+    PRETRAINED_NET = PretrainedResNet34()
+    PRETRAINED_NET.load_state_dict(models.resnet34(pretrained=True).state_dict())
+else:
+    PRETRAINED_NET = PretrainedResNet50()
+    PRETRAINED_NET.load_state_dict(models.resnet50(pretrained=True).state_dict())
+
 NET = MyNet(NUM_CLASSES, PRETRAINED_NET)
 if USE_GPU:
     NET.cuda()
@@ -86,10 +109,9 @@ LAST_TRAIN_LOSS = 10
 LAST_VAL_LOSS = 10
 # EPOCH=0
 WIDTH = 2048
-SLICE_WIDTH = 32
 NUM_SLICES = WIDTH // SLICE_WIDTH  # added   "Integer Division"
-PRINT_FREQUENCY = 1024
-for epoch in range(1):
+
+for epoch in range(NB_EPOCHS):
     # while needNewEpoch:
     # --------------------------------------training period---------------------------------------
     running_loss = 0.0
