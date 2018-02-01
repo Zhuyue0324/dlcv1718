@@ -113,10 +113,10 @@ LAST_TRAIN_LOSS = 10
 LAST_VAL_LOSS = 10
 # EPOCH=0
 WIDTH = 2048
-NUM_SLICES = WIDTH // SLICE_WIDTH  # added   "Integer Division"
+NUM_SLICES = WIDTH // SLICE_WIDTH  
 
 for epoch in range(NB_EPOCHS):
-    # while needNewEpoch:
+    
     # --------------------------------------training period---------------------------------------
     running_loss = 0.0
     epochloss = 0.0
@@ -124,40 +124,39 @@ for epoch in range(NB_EPOCHS):
 
     NET.train()
 
-    print("Slice width:  %.5d Number of Slices:  %.5d" % (WIDTH, NUM_SLICES))  # added
+    print("Slice width:  %.5d Number of Slices:  %.5d" % (SLICE_WIDTH, NUM_SLICES))  
 
     for inputs, labels in TRAIN_LOADER:
-        labels_masked = reduce(labels.numpy(), ROAD_LABELS)
-        labels = torch.from_numpy(labels_masked)
+        labels_masked = reduce(labels.numpy(), ROAD_LABELS) 
+        labels = torch.from_numpy(labels_masked)    
 
-        for i in range(NUM_SLICES):  ### added
+        for i in range(NUM_SLICES):  
 
-            inputs_temp = inputs[:, :, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  ### added
-            labels_temp = labels[:, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  ### added
+            inputs_temp = inputs[:, :, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  
+            labels_temp = labels[:, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  
 
             if USE_GPU:
-                inputs_temp = inputs_temp.cuda()  ### changed
-                labels_temp = labels_temp.cuda()  ### changed
+                inputs_temp = inputs_temp.cuda()  
+                labels_temp = labels_temp.cuda() 
 
-            inputs_temp, labels_temp = Variable(inputs_temp), Variable(labels_temp)  ### changed
+            inputs_temp, labels_temp = Variable(inputs_temp), Variable(labels_temp)  
             # zero the parameter gradients
             OPTIMIZER.zero_grad()
             # forward + backward + optimize
-            outputs = NET(inputs_temp)  ### changed
-            loss = CRITERION(outputs, labels_temp)  ### changed
+            outputs = NET(inputs_temp)  
+            loss = CRITERION(outputs, labels_temp)  
             loss.backward()
             OPTIMIZER.step()
-            # print statistics
             running_loss += loss.data[0]
             epochloss += loss.data[0]
             numsample += BATCH_SIZE
-            if numsample % PRINT_FREQUENCY == 0:  # printfrequence-1:
+            if numsample % PRINT_FREQUENCY == 0:  
                 print('[%d, %5d] loss: %.5f' %
                       (epoch + 1, numsample, running_loss / PRINT_FREQUENCY),
                       end='\r', flush=True)
                 running_loss = 0.0
 
-    newTrainLoss = epochloss / (NB_TRAIN * NUM_SLICES)  # changed
+    newTrainLoss = epochloss / (NB_TRAIN * NUM_SLICES)  
     print('The average loss of epoch ', epoch + 1, ' is ', newTrainLoss)
     torch.save(NET.state_dict(), WEIGHTS_PATH)
     # --------------------------------------validation period---------------------------------------
@@ -165,24 +164,24 @@ for epoch in range(NB_EPOCHS):
     epochloss = 0.0
     numsample = 0
     NET.eval()
-    print("Slice width:  %.5d Number of Slices:  %.5d" % (WIDTH, NUM_SLICES))  # added
+    print("Slice width:  %.5d Number of Slices:  %.5d" % (SLICE_WIDTH, NUM_SLICES))  
 
     for inputs, labels in VAL_LOADER:
         labels_masked = reduce(labels.numpy(), ROAD_LABELS)
         labels = torch.from_numpy(labels_masked)
 
-        for i in range(NUM_SLICES):  # added
+        for i in range(NUM_SLICES):  
 
-            inputs_temp = inputs[:, :, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  ### added
-            labels_temp = labels[:, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  ### added
+            inputs_temp = inputs[:, :, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  
+            labels_temp = labels[:, :, i * SLICE_WIDTH: (i + 1) * SLICE_WIDTH]  
 
             if USE_GPU:
-                inputs_temp = inputs_temp.cuda()  # changed
-                labels_temp = labels_temp.cuda()  # changed
+                inputs_temp = inputs_temp.cuda()  
+                labels_temp = labels_temp.cuda()  
 
-            inputs_temp, labels_temp = Variable(inputs_temp), Variable(labels_temp)  # changed
-            outputs = NET(inputs_temp)  # changed
-            loss = CRITERION(outputs, labels_temp)  # changed
+            inputs_temp, labels_temp = Variable(inputs_temp), Variable(labels_temp)  
+            outputs = NET(inputs_temp)  
+            loss = CRITERION(outputs, labels_temp)  
             meanProbability = np.exp(-loss.data[0])
             epochloss += loss.data[0]
             meanCorrectProba += meanProbability
@@ -191,7 +190,7 @@ for epoch in range(NB_EPOCHS):
     newValLoss = epochloss / (NB_VAL * NUM_SLICES)
     print('The average validation loss is ', newValLoss)
     print('The average correctness of the validation data is ', meanCorrectProba / (NB_VAL * NUM_SLICES) * 100,
-          '%')  # changed
+          '%')  
     # --------------------------------------evaluate the necessity of a new epoch---------------------------------------
     if (LAST_VAL_LOSS - newValLoss < 0.01) and (LAST_TRAIN_LOSS - newTrainLoss < 0.01):
         needNewEpoch = False
