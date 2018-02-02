@@ -135,8 +135,7 @@ def edge_smoother(img):
     img[1000:,:] = 1
     mask=feature.canny(img, low_threshold=0, high_threshold=1)
     am = np.argmax(mask,0)
-    for i in range(5):
-        mask[np.minimum(am+i-2,1023),range(2048)] = 1
+    mask[am,range(2048)] = 1
     return mask
 
     
