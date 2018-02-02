@@ -107,6 +107,13 @@ def lnr_basic(label_img):
 
     return label_img_rgb.astype(np.uint8)
 
+def proximity(x,y):
+    # proximity of point (x,y) to (1024,1024), in [0,255]
+    alpha = 0.0001
+    dx = (x-1023)
+    dy = (y-1023)
+    return np.sqrt(dy**2 + (dx*(1-alpha*dy))**2)/9
+
 def compare(label_img1, label_img2):
     # WARNING img1 should be target, img2 prediction
     label_img1 = np.squeeze(label_img1)
@@ -125,7 +132,9 @@ def compare(label_img1, label_img2):
     am2 = np.argmax(mask2,0)
     for i in range(5):
         res_img[np.minimum(am1+i-2,1021),range(2048),:] = [255,0,0]
-        res_img[np.minimum(am2+i-2,1021),range(2048),:] = [0,255,0]
+        for j in range(2048):
+            d = proximity(am2[j]+i-2,j)
+            res_img[np.minimum(am2[j]+i-2,1021),j,:] = [255-d,d,0]
     mse = np.sum((am1-am2)**2)
     print (mse // 2048)
     return res_img.astype(np.uint8)
