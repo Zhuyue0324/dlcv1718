@@ -84,6 +84,8 @@ def lowest_non_road_color(color_img, label_img):
         color_img_rgb[np.minimum(am+i-4,1023),range(2048),:] = [127,0,0]
     return color_img_rgb
 
+
+
 def reduce(label_img, road_labels):
     # reduces an image to just two classes, one of them given as input
     mask = np.where(label_img == 0, 1, 0)
@@ -107,12 +109,11 @@ def lnr_basic(label_img):
 
     return label_img_rgb.astype(np.uint8)
 
-def proximity(x,y):
+def proximity(x,y,alpha=0.001,beta=0.4):
     # proximity of point (x,y) to (1024,1024), in [0,255]
-    alpha = 0.0001
-    dx = (x-1023)
-    dy = (y-1023)
-    return np.sqrt(dy**2 + (dx*(1-alpha*dy))**2)/9
+    dx = np.abs(x-1023)
+    dy = np.abs(y-1023)
+    return np.sqrt(dy**2 + beta*(dx*(1-alpha*dy))**2)/9
 
 def compare(label_img1, label_img2):
     # WARNING img1 should be target, img2 prediction
@@ -146,5 +147,7 @@ def edge_smoother(img):
     am = np.argmax(mask,0)
     mask[am,range(2048)] = 1
     return mask
+
+
 
     
