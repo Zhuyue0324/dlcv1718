@@ -108,24 +108,24 @@ def lnr_basic(label_img):
     return label_img_rgb.astype(np.uint8)
 
 def compare(label_img1, label_img2):
-    # compares the LNR in both images
+    # WARNING img1 should be target, img2 prediction
     label_img1 = np.squeeze(label_img1)
     label_img2 = np.squeeze(label_img2)
-    label_img1[1000:,:] = 1 # to avoid the outside_ROI
-    label_img2[1000:,:] = 1 # to avoid the outside_ROI
-
+    label_img1[1000:,:] = 1
+    label_img2[1000:,:] = 1
+    
     res_img = np.array([label_img1,
                               label_img1,
                               label_img1]).transpose(1,2,0)
-    mask1 = np.where(label_img1 > 0, 0, 1)
-    mask2 = np.where(label_img2 > 0, 0, 1)
-    mask1 = np.diag(range(1024)).dot(mask1)
-    mask2 = np.diag(range(1024)).dot(mask2)
+    mask1 = np.where(label_img1[40:980,:] > 0, 0, 1)
+    mask2 = np.where(label_img2[40:980,:] > 0, 1, 0)
+    mask1 = np.diag(range(940)).dot(mask1)
+    mask2 = np.diag(range(940)).dot(mask2)
     am1 = np.argmax(mask1,0)
     am2 = np.argmax(mask2,0)
     for i in range(5):
-        res_img[np.minimum(am+i-2,1023),range(2048),:] = [255,0,0]
-        res_img[np.minimum(am+i-2,1023),range(2048),:] = [0,255,0]
+        res_img[np.minimum(am1+i-2,1021),range(2048),:] = [255,0,0]
+        res_img[np.minimum(am2+i-2,1021),range(2048),:] = [0,255,0]
     mse = np.sum((am1-am2)**2)
     print (mse // 2048)
     return res_img.astype(np.uint8)
