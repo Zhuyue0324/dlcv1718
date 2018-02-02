@@ -2,6 +2,10 @@
 """Taken from DL4CV Homework3 and modified the Label list"""
 import os
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy import ndimage as ndi
+
+from skimage import feature
 
 SEG_LABELS_LIST = [
     {"id": 0,  "name": "unlabeled",   "rgb_values": [0, 0,    0]},
@@ -66,7 +70,7 @@ def lowest_non_road(label_img):
     mask = np.diag(range(1024)).dot(mask)
     am = np.argmax(mask,0)
     for i in range(5):
-        label_img_rgb[am+i-2,range(2048),:] = [255,0,0]
+        label_img_rgb[np.minimum(am+i-2,1023),range(2048),:] = [255,0,0]
 
     return label_img_rgb.astype(np.uint8)
 
@@ -77,7 +81,7 @@ def lowest_non_road_color(color_img, label_img):
     mask = np.diag(range(1024)).dot(mask)
     am = np.argmax(mask,0)
     for i in range(9):
-        color_img_rgb[am+i-4,range(2048),:] = [127,0,0]
+        color_img_rgb[np.minimum(am+i-4,1023),range(2048),:] = [127,0,0]
     return color_img_rgb
 
 def reduce(label_img, road_labels):
@@ -99,7 +103,7 @@ def lnr_basic(label_img):
     mask = np.diag(range(1024)).dot(mask)
     am = np.argmax(mask,0)
     for i in range(5):
-        label_img_rgb[am+i-2,range(2048),:] = [255,0,0]
+        label_img_rgb[np.minimum(am+i-2,1023),range(2048),:] = [255,0,0]
 
     return label_img_rgb.astype(np.uint8)
 
@@ -120,8 +124,19 @@ def compare(label_img1, label_img2):
     am1 = np.argmax(mask1,0)
     am2 = np.argmax(mask2,0)
     for i in range(5):
-        res_img[am1+i-2,range(2048),:] = [255,0,0]
-        res_img[am2+i-2,range(2048),:] = [0,255,0]
+        res_img[np.minimum(am+i-2,1023),range(2048),:] = [255,0,0]
+        res_img[np.minimum(am+i-2,1023),range(2048),:] = [0,255,0]
     mse = np.sum((am1-am2)**2)
     print (mse // 2048)
     return res_img.astype(np.uint8)
+
+def edge_smoother(img):
+    img[0:30,:] = 0
+    img[1000:,:] = 1
+    mask=feature.canny(img, low_threshold=0, high_threshold=1)
+    am = np.argmax(mask,0)
+    for i in range(5):
+        mask[np.minimum(am+i-2,1023),range(2048)] = 1
+    return mask
+
+    
