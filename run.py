@@ -131,8 +131,10 @@ for epoch in range(NB_EPOCHS):
     for inputs, labels in TRAIN_LOADER:
         labels_masked = reduce(labels.numpy(), ROAD_LABELS) 
         labels = torch.from_numpy(labels_masked)    
-
-        for i in range(NUM_SLICES):  
+        random_index = np.arange(NUM_SLICES)
+        np.random.shuffle(random_index)
+        
+        for i in random_index:  
 
             inputs_temp = inputs[:, :, :, i*STRIDE : i*STRIDE + SLICE_WIDTH]
             labels_temp = labels[:, :, i*STRIDE : i*STRIDE + SLICE_WIDTH]     
