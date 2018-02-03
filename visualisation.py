@@ -149,5 +149,28 @@ def edge_smoother(img):
     return mask
 
 
-
+def stixel_bar(color_img, label_img, stride, offset):
+    label_img = np.squeeze(label_img)
+    color_img_rgb = color_img.transpose(1,2,0)
+    mask =np.where(label_img[40:980,offset:-offset] > 0, 1, 0)
+    mask = np.diag(range(940)).dot(mask)
+    am = np.argmax(mask,0)
+    distances = np.zeros(2048-2*offset)
+    for i in range(2048-2*offset):
+        distances[i]=proximity(i+offset, am[i],alpha=0.00001, beta=0.1)
+    distances=((distances-np.min(distances))/(np.max(distances)-np.min(distances))*250).astype(int)
+    for i in range(2048-2*offset):
+        if i%stride > 5:
+            d=distances[i]
+            if (i%stride < 13):
+                for j in range(am[i]+44):
+                    color_img_rgb[j,i+offset,:] = [2+d, 253-d,0]
+            elif (i%stride >stride-8):
+                for j in range(am[i]+44):
+                    color_img_rgb[j,i+offset,:] = [2+d, 253-d,0]
+            else:
+                for j in range(7):
+                    color_img_rgb[am[i]+43-j,i+offset,:] = [2+d, 253-d,0]
+                
+    return color_img_rgb
     
