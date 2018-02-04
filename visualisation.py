@@ -131,14 +131,14 @@ def compare(label_img1, label_img2):
     mask2 = np.diag(range(940)).dot(mask2)
     am1 = np.argmax(mask1,0)
     am2 = np.argmax(mask2,0)
-    for i in range(5):
-        res_img[np.minimum(am1+i-2,1021),range(2048),:] = [255,0,0]
-        for j in range(2048):
-            d = proximity(am2[j]+i-2,j)
-            res_img[np.minimum(am2[j]+i-2,1021),j,:] = [255-d,d,0]
+    #for i in range(5):
+    #    res_img[np.minimum(am1+i-2,1021),range(2048),:] = [255,0,0]
+    #    for j in range(2048):
+    #        d = proximity(am2[j]+i-2,j)
+    #        res_img[np.minimum(am2[j]+i-2,1021),j,:] = [255-d,d,0]
     mse = np.sum((am1-am2)**2)
-    print (mse // 2048)
-    return res_img.astype(np.uint8)
+    return (mse // 2048)
+    #return res_img.astype(np.uint8)
 
 def edge_smoother(img):
     img[0:30,:] = 0
