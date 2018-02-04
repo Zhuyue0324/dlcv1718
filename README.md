@@ -1,9 +1,9 @@
-# dlcv1718
-Deep Learning for Computer Vision
+# DLCV WS 2018 student project: Stixel Deep Convolutional Network for on-road object detection
 
+a basic network reusing a ResNet 34 / 50 architecture and pretrained weights on ImageNet, with added upsampling to perform binary segmentation between classes Road and Obstacles in a vertically sliced picture, and further functions to interpret it as a distance to an object.
 
-## ipynb on GCVM
+## Binary segmenter on vertically sliced picture
 
-* ssh to it, ```jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser```
-* in other window, ```gcloud compute ssh instance-1 --ssh-flag="-L" --ssh-flag="2222:localhost:8888"```
-* go to ```localhost:2222```
+Everything can be run from the IPYNB, provided you have downloaded the leftimg8bit and gtfine datasets from CityScapes, and changed the value of ```ROOT```. You also need to either delete all images that are not labelIds in the ground truth folders, or copy them to other folders (the ```_lido``` in my case) and point towards them.
+
+You may also run ```python3 run.py ... | log.txt```, which can train a network with given parameters, eventually starting from saved weights, but won't visualize or even evaluate anything (its only output is the Cross-Entropy loss of the segmentation task)
