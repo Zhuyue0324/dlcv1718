@@ -136,7 +136,7 @@ def compare(label_img1, label_img2):
     #    for j in range(2048):
     #        d = proximity(am2[j]+i-2,j)
     #        res_img[np.minimum(am2[j]+i-2,1021),j,:] = [255-d,d,0]
-    thresh = 400 * np.ones(2048)
+    thresh = 1600 * np.ones(2048)
     mse = np.sum(np.minimum((am1-am2)**2,thresh))
     return (mse // 2048)
     #return res_img.astype(np.uint8)
